@@ -1,0 +1,72 @@
+public class dropBoxAuthentication {
+
+    //private string key = '2198j4pll0z7f2u';
+    //private string secret = 'xs9f6egt2wv9htr';
+    //private string redirect_uri = 'https://c.ap1.visual.force.com/apex/Drop_Box_Test';
+    private String codeIdenToken; 
+    private String accessToken;
+    
+    public dropBoxAuthentication(){
+        codeIdenToken = ApexPages.currentPage().getParameters().get('code');
+        
+        if(codeIdenToken != '' && codeIdenToken != null){
+            AccessToken();
+        }
+    }
+    
+    public PageReference dropBoxAuthentication(){
+        PageReference pg = new PageReference('https://www.dropbox.com/1/oauth2/authorize?response_type=code&client_id=2198j4pll0z7f2u&redirect_uri=https://c.ap1.visual.force.com/apex/Drop_Box_Test');
+            //(new authForApiReq(key, redirect_uri).AuthenticationURI);
+        return pg;
+    }
+
+    public void AccessToken()
+    {
+        String tokenuri = 'https://api.dropbox.com/1/oauth2/token?grant_type=authorization_code&code='+codeIdenToken+'&redirect_uri=https://c.ap1.visual.force.com/apex/Drop_Box_Test'; 
+        //System.debug('----------------------------------------------------->' + codeIdenToken);
+        HttpRequest req = new HttpRequest();
+        //System.debug('---------------------------1------------------------->' + codeIdenToken);
+        //System.debug('---------------------------2------------------------->' + tokenuri);
+        req.setEndpoint(tokenuri);
+        req.setMethod('POST');
+        req.setTimeout(60*1000);
+
+        Blob headerValue = Blob.valueOf('2198j4pll0z7f2u' + ':' + 'xs9f6egt2wv9htr');
+        String authorizationHeader = 'BASIC ' + EncodingUtil.base64Encode(headerValue);
+        req.setHeader('Authorization', authorizationHeader);
+        Http h = new Http();
+        String resp;
+        HttpResponse res = h.send(req);
+        resp = res.getBody();
+
+        JSONParser parser = JSON.createParser(resp);
+        String s = '';
+        while(parser.nextToken() != null){
+            if(parser.getText() == 'access_token'){
+                parser.nextToken();
+                accesstoken = parser.getText();
+                s += parser.getText();
+            }
+        }  
+        
+        system.debug('----------------------------------------------------->accessToken'+accessToken );
+        System.debug('----------------------------------------------------->You can parse the response to get the access token ::: ' + resp);
+    }
+    
+    public void createFolder(){
+        String body = '{\"path\": \"/testNewFolder\",\"autorename\": false}';
+        
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('https://api.dropboxapi.com/2/files/create_folder');
+        req.setHeader('Authorization', 'Bearer ' + accesstoken);
+        req.setHeader('Content-Type', 'application/json');
+        req.setMethod('POST');
+        req.setTimeout(60000);
+        req.setBody(body);
+         
+        Http h = new Http();
+        HttpResponse responce = h.send(req);
+        String resp = responce.getBody();
+        System.debug('----------------------------------------------------->createdFolder ::' + resp);  
+    } 
+}
