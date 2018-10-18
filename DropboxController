@@ -1,0 +1,67 @@
+public class DropboxController
+{
+
+     public String code;
+    String access_token;
+    
+    public DropboxController(){
+        code = ApexPages.currentPage().getParameters().get('code');
+        if(code!='' && code!=null){
+            AccessToken();
+        }
+    }
+   
+    public PageReference DropboxController(){
+        PageReference pg = new PageReference('https://www.dropbox.com/1/oauth2/authorize?response_type=code&client_id=2198j4pll0z7f2u&redirect_uri=https://c.ap1.visual.force.com/apex/Drop_Box_Test') ;
+        return pg ;
+    }
+    
+    public void AccessToken(){
+        String tokenUri = 'https://api.dropbox.com/1/oauth2/token?grant_type=authorization_code&code='+code+'&redirect_uri=https://c.ap1.visual.force.com/apex/Drop_Box_Test'; 
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint(tokenUri);
+        request.setMethod('POST');
+        request.setTimeout(60*1000);
+        
+        Blob headerValue = Blob.valueOf('2198j4pll0z7f2u'+':'+'xs9f6egt2wv9htr');
+        String authHeader = 'BASIC ' + EncodingUtil.base64Encode(headerValue);
+        request.setHeader('Authorization', authHeader);
+        Http http = new Http();
+        String response;
+        HttpResponse httpResponse = http.send(request);
+        response = httpResponse.getBody();
+        
+        JSONParser parser = JSON.createParser(response);
+        String s = '';
+        while(parser.nextToken() != null){
+            if(parser.getText() == 'access_token'){
+                parser.nextToken();
+                access_token = parser.getText();
+                s += parser.getText();
+            }
+        }   
+
+        System.debug('Access token :: ' + access_token);
+        
+        System.debug('You can parse the response to get the access token :' + response);
+    }
+    
+    public void createFolder(){
+        String body = '{\"path\": \"/test\",\"autorename\": false}';
+        
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('https://api.dropboxapi.com/2/files/create_folder');
+        req.setHeader('Authorization', 'Bearer ' + access_token);
+        req.setHeader('Content-Type', 'application/json');
+        req.setMethod('POST');
+        req.setTimeout(60000);
+        req.setBody(body);
+         
+        Http h = new Http();
+        HttpResponse responce = h.send(req);
+        String resp = responce.getBody();
+        System.debug(' createdFolder :: ' + resp);
+        
+    }
+    
+}
