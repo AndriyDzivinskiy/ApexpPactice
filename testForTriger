@@ -1,0 +1,20 @@
+@isTest
+public class OpportunityTestTrigger {
+    @isTest 
+    static void allDataTest (){
+        
+        Account acc = new Account();
+        acc.Name = 'Test Account';
+        acc.Opps_separated_by_coma__c = 'test';
+        insert acc;
+    
+        Opportunity opp = new Opportunity();
+        opp.Name = 'Test Trigger 999';
+        opp.CloseDate = Date.today();
+        opp.StageName = 'Closed Lost';
+        opp.AccountId = acc.Id;
+        insert opp;
+        
+    } 
+    
+}
