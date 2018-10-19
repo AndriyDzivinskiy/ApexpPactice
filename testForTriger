@@ -5,15 +5,23 @@ public class OpportunityTestTrigger {
         
         Account acc = new Account();
         acc.Name = 'Test Account';
-        acc.Opps_separated_by_coma__c = 'test';
+        //acc.Opps_separated_by_coma__c = 'test';
         insert acc;
-    
+        
+        
         Opportunity opp = new Opportunity();
         opp.Name = 'Test Trigger 999';
         opp.CloseDate = Date.today();
         opp.StageName = 'Closed Lost';
         opp.AccountId = acc.Id;
         insert opp;
+        
+        Opportunity opp1 = new Opportunity();
+        opp1.Name = 'Test Trigger 888';
+        opp1.CloseDate = Date.today();
+        opp1.StageName = 'Closed Lost';
+        opp1.AccountId = acc.Id;
+        insert opp1;
         
     } 
     
