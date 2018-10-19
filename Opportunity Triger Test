@@ -1,0 +1,29 @@
+trigger OpportunityTestTriger on Opportunity (before insert) {
+    list<Opportunity> opp1 = new List<Opportunity>();
+    Set<id> accId = new Set<Id>(); 
+    
+    
+    for (Opportunity opp : Trigger.new){
+        opp1.add(opp);
+        accId.add(opp.AccountId);
+    }
+
+    List<Account> aUpdate = [SELECT Name, Opps_separated_by_coma__c FROM Account WHERE Id IN: accId];
+    
+    for(Account ac : aUpdate){
+        if(ac.Opps_separated_by_coma__c == null){
+ 			ac.Opps_separated_by_coma__c = opp1.get(0).Name;           
+        }
+        else{
+            if(ac.Opps_separated_by_coma__c != null){
+               String t = aupdate.get(0).Opps_separated_by_coma__c;
+               ac.Opps_separated_by_coma__c = t + ', ' + opp1.get(0).Name;
+                
+            	}
+            }
+        
+    }
+
+update aUpdate;
+
+}
